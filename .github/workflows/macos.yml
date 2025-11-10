@@ -1,0 +1,65 @@
+name: "macos"
+
+on:
+  push:
+    branches: [ '**']
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ main ]
+
+jobs:
+  macos:
+    name: macOS Build
+    permissions:
+      id-token: write
+      contents: write
+      attestations: write
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - QT_VERSION: '6.10.0'
+            XCODE_VERSION: '26.1'
+            GENERATOR: 'Ninja'
+            RELEASE: false
+            os: macos-26
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v5
+
+    - name: Cache Qt
+      uses: actions/cache/restore@v4
+      id: restore-cache
+      with:
+        path: ~/Cache
+        key: ${{ runner.os }}-${{ matrix.QT_VERSION }}
+
+    - name: Qt install setup
+      if: steps.restore-cache.outputs.cache-hit != 'true'
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.13'
+
+    - name: Qt install
+      if: steps.restore-cache.outputs.cache-hit != 'true'
+      run: |
+        pip3 install 'aqtinstall>=3.1.20'
+        aqt install-qt mac desktop ${{ matrix.QT_VERSION }} clang_64 -O "${HOME}/Qt" -m "${mods[@]}"
+
+    - name: Script
+      run: |
+        sudo xcode-select --switch /Applications/Xcode_${{ matrix.XCODE_VERSION }}.app
+        mkdir bld
+        cd bld
+        cmake -G Ninja -DCMAKE_PREFIX_PATH=${HOME}/Qt/${{ matrix.QT_VERSION }}/macos ..
+        cmake --build .
+
+    - name: Save Cache Qt
+      if: ( steps.restore-cache.outputs.cache-hit != 'true' ) && ( github.ref == 'refs/heads/main' )
+      uses: actions/cache/save@v4
+      with:
+        path: ~/Cache
+        key: ${{ steps.restore-cache.outputs.cache-primary-key }}
+
