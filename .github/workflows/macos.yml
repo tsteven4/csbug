@@ -22,7 +22,6 @@ jobs:
           - QT_VERSION: '6.10.0'
             XCODE_VERSION: '26.1'
             GENERATOR: 'Ninja'
-            RELEASE: false
             os: macos-26
 
     steps:
@@ -45,7 +44,7 @@ jobs:
     - name: Qt install
       if: steps.restore-cache.outputs.cache-hit != 'true'
       run: |
-        pip3 install 'aqtinstall>=3.1.20'
+        pip3 install 'aqtinstall>=3.3.0'
         aqt install-qt mac desktop ${{ matrix.QT_VERSION }} clang_64 -O "${HOME}/Cache/"
 
     - name: Script
