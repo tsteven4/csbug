@@ -46,14 +46,14 @@ jobs:
       if: steps.restore-cache.outputs.cache-hit != 'true'
       run: |
         pip3 install 'aqtinstall>=3.1.20'
-        aqt install-qt mac desktop ${{ matrix.QT_VERSION }} clang_64 -O "${HOME}/Qt" -m "${mods[@]}"
+        aqt install-qt mac desktop ${{ matrix.QT_VERSION }} clang_64 -O "${HOME}/Cache/"
 
     - name: Script
       run: |
         sudo xcode-select --switch /Applications/Xcode_${{ matrix.XCODE_VERSION }}.app
         mkdir bld
         cd bld
-        cmake -G Ninja -DCMAKE_PREFIX_PATH=${HOME}/Qt/${{ matrix.QT_VERSION }}/macos ..
+        cmake -G Ninja -DCMAKE_PREFIX_PATH=${HOME}/Cache/${{ matrix.QT_VERSION }}/macos ..
         cmake --build .
 
     - name: Save Cache Qt
