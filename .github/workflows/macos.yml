@@ -54,7 +54,8 @@ jobs:
         mkdir bld
         cd bld
         cmake -G Ninja -DCMAKE_PREFIX_PATH=${HOME}/Cache/${{ matrix.QT_VERSION }}/macos ..
-        cmake --build .
+        cmake --build . --verbose
+        find BundleExec.app
 
     - name: Save Cache Qt
       if: ( steps.restore-cache.outputs.cache-hit != 'true' ) && ( github.ref == 'refs/heads/main' )
